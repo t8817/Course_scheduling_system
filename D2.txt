@@ -1,0 +1,452 @@
+
+
+drop table department cascade constraints;
+
+------- 1-department table-------
+
+create table department
+(
+		did varchar(50),
+		dname varchar(30),
+		primary key (did)
+);
+
+
+insert into department values('IS', 'Information System');
+insert into department values('CS', 'Computer Science');
+insert into department values('DS', 'Data Science');
+insert into department values('SE', 'Software Engineering');
+insert into department values('ME','Mechanical Engineering');
+
+
+drop table program cascade constraints;
+
+-------2-program table-------
+
+create table program
+(
+	pid varchar(80),
+	pname varchar(50),
+	ptype int,
+	primary key(pid)
+        );
+
+insert into program values('ISBS','Bachelor Of Science in Information System', 1);
+insert into program values('ISMS','Master Of Science in Information System', 2);
+insert into program values('ISPhD','PhD in Information System', 3);
+insert into program values('CSBS','Bachelor Of Science in Computer Science', 1);
+insert into program values('CSMS','Master Of Science in Computer Science', 2);
+insert into program values('CSPhD','PhD in Computer Science', 3);
+
+
+drop table course cascade constraints;
+
+------3-course table-------
+
+create table course
+(
+	cid varchar(20),
+	cname varchar(100),
+	credits int,
+	grading varchar(20),
+	required int,
+	room varchar(50),
+	section int,
+	csize int,
+	status int,
+	primary key(cid)
+	); 
+
+insert into course values('IS 620' , 'Advance Database Project', 3, ' pass' , 1, 'Class room', 1, 50, 1);
+insert into course values('IS 650' , 'Artificial Intelligence', 3, ' letter' , 0, 'Class room', 1, 20, 1);
+insert into course values('IS 636' , 'System Analysis and Design', 3, ' pass' , 1, 'Computer Lab', 1, 15, 0);
+insert into course values('IS 603' , 'Decision technology', 3, 'pass' , 1, 'Computer Lab', 1, 15, 0);
+insert into course values('IS 601' , 'Introduction to information system', 3, 'pass' , 1, 'Computer Lab', 1, 15, 0);
+
+
+
+drop table prerequisit cascade constraints;
+
+--------4-prerequisit table-------
+
+create table prerequisit
+(
+	cid varchar(20),
+	prid varchar(20),
+	prname varchar(100),
+ 	Foreign key(cid) references course(cid)
+
+
+);
+
+insert into prerequisit values('IS 620', 'IS 403', 'Database Management System');
+insert into prerequisit values('IS 650', 'IS 649 ', 'Artificial Intelligence');
+insert into prerequisit values('IS 636', 'IS 100', 'System Analysis and Design');
+insert into prerequisit values('IS 603', 'IS 202',  'Decision technology');
+insert into prerequisit values('IS 601', 'IS 330', 'Introduction to information system');
+
+
+drop table building cascade constraints;
+
+-------5-building table-------
+
+create table building
+(
+	bid varchar(100),
+	bname varchar(50),
+            primary key (bid)
+
+);
+
+insert into building values('IT', 'Information And Technology');
+insert into building values('PH', 'Physics');
+insert into building values('CH', 'Chemistry');
+insert into building values('AR', 'Arts and Humanity');
+insert into building values('MT', 'Mathematics');
+
+
+-------BUILDING CLASSROOMS-----
+
+drop table building_IT cascade constraints;
+create table building_IT
+(
+     	bid varchar(100),
+     	rid int,
+	rname varchar(50),
+	total_seats int,
+	room_type int,
+PRIMARY KEY(RID),
+ foreign key (bid) references building(bid)
+);
+
+insert into building_IT values('IT','101','IT101','30',0);
+insert into building_IT values('IT','102','IT102','20',1);
+insert into building_IT values('IT','103','IT103','30',0);
+insert into building_IT values('IT','104','IT104','20',1);
+insert into building_IT values('IT','105','IT105','20',1);
+
+
+drop table building_PH cascade constraints;
+create table building_PH
+(
+     bid varchar(100),
+     rid int,
+	 rname varchar(50),
+	 total_seats int,
+	 room_type int,
+PRIMARY KEY(RID),
+ foreign key (bid) references building(bid)
+);
+insert into building_PH values('PH','201','PH201','30',0);
+insert into building_PH values('PH','202','PH202','20',1);
+insert into building_PH values('PH','203','PH203','30',0);
+insert into building_PH values('PH','204','PH204','30',0);
+insert into building_PH values('PH','205','PH205','30',0);
+ 
+
+drop table building_CH cascade constraints;
+create table building_CH
+(
+     bid varchar(100),
+     rid int,
+	 rname varchar(50),
+	 total_seats int,
+	 room_type int,
+            PRIMARY KEY(RID),
+ foreign key (bid) references building(bid)
+);
+insert into building_CH values('CH','301','CH301','30',0);
+insert into building_CH values('CH','302','CH302','30',0);
+insert into building_CH values('CH','303','CH303','20',1);
+insert into building_CH values('CH','304','CH304','30',0);
+insert into building_CH values('CH','305','CH305','30',0);
+ 
+drop table building_AR cascade constraints;
+create table building_AR
+(
+     bid varchar(100),
+     rid int,
+	 rname varchar(50),
+	 total_seats int,
+	 room_type int,
+PRIMARY KEY(RID),
+ foreign key (bid) references building(bid)
+);
+insert into building_AR values('AR','401','AR401','30',1);
+insert into building_AR values('AR','402','AR402','30',1);
+insert into building_AR values('AR','403','AR403','30',1);
+insert into building_AR values('AR','404','AR404','30',1);
+insert into building_AR values('AR','405','AR405','30',1);
+	 
+drop table building_MT cascade constraints;
+create table building_MT
+(
+     bid varchar(100),
+     rid int,
+	 rname varchar(50),
+	 total_seats int,
+	 room_type int,
+PRIMARY KEY(RID),
+ foreign key (bid) references building(bid)
+
+);
+insert into building_MT values('MT','501','MT501','30',1);
+insert into building_MT values('MT','502','MT502','30',1);
+insert into building_MT values('MT','503','MT503','30',1);
+insert into building_MT values('MT','504','MT504','30',1);
+insert into building_MT values('MT','505','MT505','30',1);
+
+
+
+-----------DEPARTMENT INSTRUCTOR-------------------
+drop table department_instructor cascade constraints;
+create table department_instructor
+(
+     iid int,  
+     iname varchar(80),
+     employ_category varchar(20),
+PRIMARY KEY(iid)
+);
+insert into department_instructor values(1,'Chen','full-time');
+insert into department_instructor values(2,'Vandana Janeja', 'part-time');
+insert into department_instructor values(3,'Karabatis', 'full-time');
+insert into department_instructor values(4,'James Foulds','full-time');
+insert into department_instructor values(5,'John Hebler','part-time');
+
+
+-------------COURSE LOAD-------------
+drop table course_load cascade constraints;
+Create table course_load
+(
+iname varchar(80),
+Section int,
+cname varchar(100),
+Primary key(iname)
+);
+
+Insert into course_load values('Dr.Chen',1,'IS620');
+Insert into course_load values('Dr.Chen1',1,'IS733');
+Insert into course_load values('Dr.Chen2',2,'IS733');
+Insert into course_load values('Dr.Karabatis',2,'IS777');
+Insert into course_load values('Dr.James',1,'IS720'); 
+
+
+--------- List of Courses --------
+drop table instructor_course_teach cascade constraints;
+create table instructor_course_teach
+(
+     	iname varchar(80),
+	cname varchar(25),
+	section int,
+	Date_teach DATE,
+PRIMARY KEY(Date_teach),
+FOREIGN KEY(iname) references course_load(iname)
+);   
+
+insert into instructor_course_teach values('Dr.Chen', 'Advance Database Project' , 1 ,Date '2019-05-01');
+insert into instructor_course_teach values('Dr.Chen1', 'Data mining',2 ,Date '2019-02-02');
+insert into instructor_course_teach values('Dr.Chen2', 'Data mining',3,Date '2019-10-03');
+insert into instructor_course_teach values('Dr.Karabatis', 'Computer Architecture',4,Date '2019-01-01');
+insert into instructor_course_teach values('Dr.James', 'Computer Architecture',4,Date '2019-08-01');
+
+
+---------Student Table -----------
+drop table student cascade constraints;
+ create table student
+  (
+	sid int,
+	sname varchar(30),
+	pname varchar(50),
+           primary key(sid)
+);  
+
+insert into STUDENT values(1,'Simran', 'Bachelor Of Science in Information System');
+insert into STUDENT values(2,'Krishna', 'Master Of Science in Information System');
+insert into STUDENT values(3,'Tanvi', 'PhD in Information System');
+insert into STUDENT values(4,'Indrajeet', 'Master in Information System' );
+insert into STUDENT values(5,'Aman', 'Master in Information System' );
+
+
+
+----------------instructor non teaching days----------
+drop table instructor_non_teaching_days cascade constraints;
+
+create table instructor_non_teaching_days
+(
+INAME varchar(80),
+Day1_cannot_teach varchar(200),
+Day2_cannot_teach varchar(200),
+FOREIGN KEY(iname) REFERENCES course_load(iname)
+);  
+
+Insert into instructor_non_teaching_days values('Dr.Chen','Thursday','Monday');
+Insert into instructor_non_teaching_days values('Dr.Chen1','Thursday','Friday');
+Insert into instructor_non_teaching_days values('Dr.Chen2','Tuesday','Friday');
+Insert into instructor_non_teaching_days values('Dr.Karabatis','Thursday','Wednesday');
+Insert into instructor_non_teaching_days values('Dr.James','Monday','Wednesday');
+
+
+
+----------------course schedule at a time block----------
+drop table time_block cascade constraints;
+
+Create table time_block
+(
+
+Time_block_ID int,
+Start_time timestamp,
+Length varchar(80),
+Day1 int,
+Day2 int,
+Primary key(Time_block_ID)
+);
+
+Insert into time_block values(101,timestamp '2019-09-25 16:30:00.00','2.5 hours',1,0);
+Insert into time_block values(401,timestamp '2019-09-27 16:30:00.00','1 hour 15 minutes',3,5);
+Insert into time_block values(301,timestamp '2019-09-30 16:30:00.00','1 hour 15 minutes',2,4);
+Insert into time_block values(501,timestamp '2019-10-10 16:30:00.00','2.5 hours',6,0);
+Insert into time_block values(201,timestamp '2019-10-14 16:30:00.00','1 hour 15 minutes',2,5);
+
+
+
+-----------course schedule sections----------
+drop table course_schedule_section cascade constraints;
+Create table course_schedule_section
+(
+section varchar(90),
+Time_block_id int,
+Primary key(section),
+Foreign key (Time_block_ID) references time_block(Time_block_ID)
+) ; 
+
+Insert into course_schedule_section values (1,101);
+Insert into course_schedule_section values (2,401);
+Insert into course_schedule_section values (3,201);
+Insert into course_schedule_section values (4,301);
+Insert into course_schedule_section values (5,501);
+
+
+
+
+----------- schedule----------
+drop table schedule cascade constraints;
+
+Create table schedule
+(
+Schedule_id varchar(90),
+cid varchar(80),
+IID int,
+Year int,
+Semester varchar(100),
+Capacity int,
+Time_block_id int,
+Room_id int,
+Waiting_list_capacity int,
+Status int,
+Primary key(schedule_id),
+Foreign key(iid) references department_instructor(iid),
+Foreign key(cid) references course(cid),
+FOREIGN KEY(Time_block_ID) references time_block(Time_block_ID)
+);  
+Insert into schedule values('SCH001','IS 620',1,2019,'second',45,101,111,15,0);
+Insert into schedule values('SCH002','IS 650',2,2019,'third',45,401,459,15,0);
+Insert into schedule values('SCH003','IS 636',3,2019,'fourth',45,301,373,15,0);
+Insert into schedule values('SCH004','IS 603',4,2019,'first',45,501,560,15,1);
+Insert into schedule values('SCH005','IS 601',5,2019,'third',45,201,422,15,0);
+
+
+
+-------------table wait list----------------
+drop table wait_list cascade constraints;
+
+Create table wait_list
+(
+sid int,
+Schedule_id varchar(90),
+Position_student_waitlist int,
+Primary key(Position_student_waitlist),
+Foreign key(sid) references student(sid),
+Foreign key(schedule_id) references schedule(schedule_id)
+);
+
+Insert into wait_list values(1,'SCH001',3);
+Insert into wait_list values(2,'SCH002',2);
+Insert into wait_list values(3,'SCH003',1);
+Insert into wait_list values(4,'SCH004',4);
+Insert into wait_list values(5,'SCH005',5);
+
+
+
+---student registration scheduled section course--------------
+
+drop table student_sch_sec_reg cascade constraints;
+Create table student_sch_sec_reg
+(
+Registration_status int,
+Student_grade_coursesection varchar(10)
+
+);
+Insert into student_sch_sec_reg values (2,'B');
+Insert into student_sch_sec_reg values (1,'A');
+Insert into student_sch_sec_reg values (2,'A');
+Insert into student_sch_sec_reg values (0,'A');
+Insert into student_sch_sec_reg values (0,'B');
+
+
+
+---special permission student with no prerequisite or closed section-----
+
+drop table special_permit_students cascade constraints;
+
+Create table special_permit_students
+
+(
+Sid int,
+Scheduled_section_id varchar(90),
+Spl_Permission_type varchar2(50),
+Primary key(Scheduled_section_id),
+Foreign key (sid) references student(sid)
+);
+
+Insert into special_permit_students values (1,'SCH001',1);
+Insert into special_permit_students values (2,'SCH002',1);
+Insert into special_permit_students values (1,'SCH003',2);
+Insert into special_permit_students values (3,'SCH004',1);
+Insert into special_permit_students values (2,'SCH005',1);
+
+
+
+
+
+
+
+SELECT * FROM department;
+SELECT * FROM program;
+SELECT * FROM course;
+SELECT * FROM prerequisit;
+SELECT * FROM building;
+SELECT * FROM building_IT;
+SELECT * FROM building_PH;
+SELECT * FROM building_CH;
+SELECT * FROM building_AR;
+SELECT * FROM building_MT;
+SELECT * FROM department_instructor;
+SELECT * FROM course_load;
+SELECT * FROM instructor_course_teach;
+SELECT * FROM student;
+SELECT * FROM Instructor_non_teaching_days;
+SELECT * FROM Time_block;
+SELECT * FROM Course_schedule_section;
+SELECT * FROM Schedule;
+SELECT * FROM wait_list;
+SELECT * FROM Student_sch_sec_reg;
+SELECT * FROM special_permit_students;
+
+commit;
+
+
+
+
+
+
+

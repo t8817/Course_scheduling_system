@@ -1,0 +1,37 @@
+CREATE OR REPLACE PROCEDURE register_student(
+               dschid in schedule.sch_id%TYPE,
+	       dsid IN student.sid%TYPE,
+               dcid IN s_registration.cid%TYPE  
+              )
+as
+c1 number(2):=0;
+c2 number(2):=0;
+c3 number(2):=0;
+preq varchar(5);
+cstatus number(3);
+BEGIN
+select count(*) into c1 from student where sid=dsid;
+select count(*) into c2 from schedule where sch_id=dschid;
+select count(*) into c3 from s_registration where sid=dsid;
+select permission_type into c3 from s_permit where sid=dsid and cid=dcid and sch_id=dschid;
+select status into cstatus from schedule where sch_id=dschid and cid=dcid;
+if c1 = 0 then
+dbms_output.put_line('Student id is incorrect');
+elsif c2=0 then 
+dbms_output.put_line('Shecedule id is incorrect');
+elsif preq!='2' then
+dbms_output.put_line('student has no prerequisite');
+elsif cstatus=0 then
+dbms_output.put_line('class capicity is full');
+else
+insert into s_registration values(dsid,dcid,cstatus);
+end if;
+END;
+/
+
+
+begin
+dbms_output.put_line('record is');
+show_course(2019,'Fall');
+end;
+/

@@ -1,0 +1,43 @@
+--Feature 15---
+
+create or replace procedure feature15 (d_id in varchar, yr in number, sem in varchar)
+is
+cursor c1 is select c.section,c.cid,c.cname,sch.section_id,count(r_status) as stu_enr_wl 
+              from schedule sch,course c,program p,department d,wait_list wl,s_registration r
+              where sch.cid=c.cid and p.pid=c.pid and p.did=d.did and sch.sch_id=wl.sch_id and 
+              sch.sch_id=r.sch_id and r.sch_id=wl.sch_id and year=yr and semester=sem and 
+			  r.r_status in (1,0)and d.did=d_id group by c.section,c.cid,c.cname,sch.sid;
+total_courses int;
+total_stu int;
+no_sec course.section%type;
+c_id course.cid%type; 
+c_name course.cname%type;
+se_id schedule.section_id%type;
+no_stu_enrl_wl int;
+v_count int;
+begin
+ select count(*) into v_count from department where did=d_id;
+  if v_count=0 then
+   dbms_output.put_line('Invalid department ID');
+  else 
+ select count(r.sid)into total_stu from schedule sch,course c,program p,department d,s_registration r,wait_list wl
+   where sch.cid=c.cid and p.pid=c.pid and p.did=d.did  and  sch.sch_id=wl.sch_id and r.sid=wl.sid and
+    sch.sch_id=r.sch_id and r.r_status =1 and sch.year=yr and sch.semester=sem and d.did=d_id having count(*)>=1;
+	dbms_output.put_line('Total number of students enrolled to at least one course for year : '||yr||' and semester : '||sem||' is '||total_stu);
+      open c1;
+	   select count(c.cid) as total_cour into total_courses from course c,program p,department d,schedule sch
+       where c.pid=p.pid and d.did=p.did and sch.cid=c.cid and year=yr and semester=sem;
+        loop 
+		 fetch c1 into no_sec,c_id,c_name,se_id,no_stu_enrl_wl;
+		 exit when c1%notfound;
+		  dbms_output.put_line('Total number of courses is : '||total_courses|| ', course ID is :'||c_id||'course name is :'||c_name||
+		  ', section ID is : '||se_id||', number students in enrolled or waitlist status is :'||no_stu_enrl_wl);
+		end loop;
+	end if;
+end;
+/	
+
+----execution---
+show errors;
+
+exec feature15('IS',2019,'fall');

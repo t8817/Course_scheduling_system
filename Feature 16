@@ -1,0 +1,48 @@
+CREATE OR REPLACE PROCEDURE find_max_course(
+	       dyear IN c_teach.year%TYPE,
+           dsem in c_teach.semester%TYPE,k in number)
+as
+c number(2):=0;
+dcname course.cname%TYPE;
+wc schedule.waiting_capacity%TYPE;
+dcid schedule.cid%TYPE;
+drid schedule.cid%TYPE;
+dbid schedule.tblock_id%TYPE;
+trname room.rname%TYPE;
+dse time_block.se_time%TYPE;
+dday1 time_block.day1%TYPE;
+dday2 time_block.day2%TYPE;
+cursor c1 is select cid,waiting_capacity,cname from course natural join schedule e1 where k-1=(select count(DISTINCT waiting_capacity) from schedule e2 where e2.waiting_capacity>e1.waiting_capacity);
+cursor c2 is select rid,cid from schedule e1 where k-1=(select count(DISTINCT rid) from schedule e2 where e2.rid<e1.rid);
+cursor c3 is select tblock_id,se_time,day1,day2 from time_block where tblock_id=(select DISTINCT tblock_id from schedule e1 where 0=(select count(DISTINCT tblock_id) from schedule e2 where e2.tblock_id<e1.tblock_id));
+BEGIN
+OPEN c1; 
+LOOP
+        FETCH c1 INTO dcid,wc,dcname;
+        EXIT WHEN c1%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('courid '||dcid||' Course name '||dcname|| ' Waiting capacity'||wc);
+end loop;
+close c1;
+OPEN c2; 
+LOOP
+        FETCH c2 INTO drid,dcid;
+        EXIT WHEN c2%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('roomid '||drid || 'courseid '||dcid);
+end loop;
+close c2;
+OPEN c3; 
+LOOP
+        FETCH c3 INTO dbid,dse,dday1,dday2;
+        EXIT WHEN c3%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('blockid '||dbid ||' start time '||dse|| ' day1 '||dday1|| ' day2 '||dday2);
+end loop;
+close c3;
+END;
+/
+
+
+begin
+dbms_output.put_line('record is');
+find_max_course(2019,'Fall',1);
+end;
+/

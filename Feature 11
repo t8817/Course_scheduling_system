@@ -1,0 +1,51 @@
+
+----feature 11----
+show errors;
+create or replace function prerequisi_check(schedule_id in varchar2,student_id in number) return number is
+prereqname varchar2(1000);
+student_id_found number;
+schedule_id_found varchar2(3000);
+course_id varchar2(5667);
+v_out number;
+begin
+select count(*) INTO student_id_found from  student  where sid =student_id;
+	select count(*) INto schedule_id_found from  SCHEDULE  where sch_id =schedule_id;
+select CID INTO course_id from SCHEDULE where sch_id=schedule_id;
+select distinct pr.cid into prereqname from student s,schedule sc,prerequisit pr,course c ,program p
+where sc.cid=c.cid and s.pid=p.pid and pr.cid=c.cid and  schedule_id=sc.sch_id and p.pid=c.pid and student_id=s.sid ;
+if schedule_id_found !=0 and /*schedule_id_found=schedule_id and student_id_found=student_id and */prereqname= course_id then
+v_out:=1;
+return v_out;
+else
+v_out:=0;
+return v_out;
+end if;
+exception
+when no_data_found then
+--dbms_output.put_line('No data found exception');
+v_out:=0;
+return v_out;
+end;
+/
+
+
+
+-----Execution----
+
+set serveroutput on;  ---valid output
+declare 
+v_out number;
+begin
+v_out:=prerequisi_check('SCH003',4);
+dbms_output.put_line(v_out);
+end;
+/
+
+set serveroutput on; --invalid output
+declare 
+v_out number;
+begin
+v_out:=prerequisi_check('SCH003',1);
+dbms_output.put_line(v_out);
+End;
+/

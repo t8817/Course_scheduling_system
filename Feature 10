@@ -1,0 +1,53 @@
+----feature 10----
+
+show errors;
+create or replace PROCEDURE specialPermission (student_id IN number, schedule_id IN varchar2) IS 
+PERMISSION_TYPE number; 
+   STUDENT_ID_FOUND number;
+   schedule_id_found number;
+   course_id varchar2(32767);
+   rstatus int;
+   spermit int;
+   studentid int;
+   scheduleid varchar(100);
+BEGIN 
+	select count(*) INTO student_id_found from  student  where sid =student_id;
+	select count(*) INTO schedule_id_found from  SCHEDULE  where sch_id =schedule_id;
+select distinct c.cid,r_status,sc.sch_id,s.sid into course_id,permission_type,scheduleid,studentid  from student s,schedule sc,course c ,program p,s_registration sr
+where sc.cid=c.cid and s.pid=p.pid and p.pid=c.pid and sr.cid=c.cid and schedule_id=sc.sch_id and student_id=s.sid; 
+IF student_id_found !=0 or schedule_id_found!=0 THEN 
+	INSERT INTO S_PERMIT (SID, SCH_ID, CID, PERMISSION_TYPE) VALUES (student_id , schedule_id , course_id , PERMISSION_TYPE);
+ELSe
+dbms_output.put_line('Invalid Inputs');
+    commit;
+   END IF; 
+   exception
+when no_data_found then
+dbms_output.put_line('Invalid Inputs');
+END;
+/
+
+
+
+
+
+set serveroutput on; 
+BEGIN  ---valid output for permission changed to 2 for these inputs
+   specialPermission(2, 'SCH004'); 
+END; 
+/
+
+set serveroutput on; 
+BEGIN  ---output when no data  found 
+   specialPermission(26, 'SCH001'); 
+END;
+/ 
+
+set serveroutput on;
+---No data found exception
+begin
+specialPermission(6,'SCH002');
+end ;
+/
+
+select * from s_permit;

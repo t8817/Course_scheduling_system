@@ -1,0 +1,40 @@
+-----feature 1----
+
+
+CREATE SEQUENCE autocourseid
+  MINVALUE 1
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE;
+CREATE OR REPLACE PROCEDURE insertcourse(
+	   dpid IN course.pid%TYPE,
+	   dcid IN course.cid%TYPE,
+	   dcname in course.cname%TYPE,
+           dcredits in course.credits%TYPE,
+           dgrading in course.grading%TYPE,
+           drequired in course.required%TYPE,
+           droomtype in course.roomtype%TYPE,
+           dsection in course.section%TYPE,
+           dcsize in course.csize%TYPE,
+           dstatus in course.status%TYPE)
+IS
+c number(2):=0;
+BEGIN
+select count(*) into c from course where cname=dcname;
+if c > 0 then
+update  course set  pid=dpid, cname=dcname, credits=dcredits, grading=dgrading , required=drequired, roomtype=droomtype, section=dsection, csize=dcsize, status=dstatus where cid=dcid;
+COMMIT;
+else
+insert into course values(dpid, autocourseid.nextval , dcname, dcredits, dgrading , drequired, droomtype, dsection, dcsize, dstatus);
+dbms_output.put_line('new courseid is '||autocourseid.currval);
+COMMIT;
+end if;
+END;
+/
+begin
+insertcourse('ISMS', 'IS 620' , 'Advance Database Project', 3,3, 1, 0, 2, 50, 1);
+end;
+/
+begin
+insertcourse('CSMS', 'cs620' , 'Advance Database Project4', 3,3, 1, 0, 2, 50, 1);
+end;/

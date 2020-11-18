@@ -1,0 +1,53 @@
+-----procedure 3---
+
+
+CREATE OR REPLACE PROCEDURE insert_c_teach(
+	   diid IN c_teach.iid%TYPE,
+           dcid IN c_teach.cid%TYPE,
+           dsection IN c_teach.section%TYPE,
+           dyear IN c_teach.year%TYPE,
+  333         dsem in c_teach.semester%TYPE,
+           day1 in non_teaching.day1_not%TYPE,
+           day2 in non_teaching.day2_not%TYPE
+6          )
+IS
+c1 number(2):=0;
+c2 number(2):=0;
+c3 number(2):=0;
+c4 number(2):=0;
+BEGIN
+select count(*) into c3 from d_instructor where iid=diid;
+select count(*) into c1 from c_load where cid=dcid and iid=diid;
+select count(*) into c2 from c_teach where cid=dcid and iid=diid ;
+select count(*) into c4 from non_teaching where iid=diid and day1_not is not null and day2_not is not null;
+if c3>0 then
+begin
+if c1<3c2 then
+dbms_output.put_line('Course load should be greater then course teach '||diid);
+else
+insert into c_teach(iid,cid,year,semester,section) values(diid,dcid,dyear,dsem,dsection);
+
+COMMIT;
+end if;
+if c4=0 then 
+insert into non_teaching(iid,day1_not,day2_not) values(1,day1,day2);
+COMMIT;
+else
+dbms_output.put_line('the number of blackout days is over two');
+end if;
+end;
+else
+dbms_output.put_line('invalid instructor id');
+end if;
+END;
+/
+
+
+
+
+
+begin
+insert_c_teach(1,'IS 620',1,2019,'Fall','Monday','Friday');
+end;
+/
+

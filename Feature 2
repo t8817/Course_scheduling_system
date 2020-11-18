@@ -1,0 +1,45 @@
+-----first create sequence for instructor autogenrate  table----
+
+CREATE SEQUENCE autoinstid
+  MINVALUE 1
+  START WITH 7
+  INCREMENT BY 1
+  NOCACHE;
+
+
+
+-----Execute procedure----
+
+CREATE OR REPLACE PROCEDURE insertinstructor(
+	   diid IN d_instructor.iid%TYPE,
+           diname IN d_instructor.iname%TYPE,
+           ditype in d_instructor.itype%TYPE,
+           ddid IN d_instructor.did%TYPE
+           )
+IS
+c number(2):=0;
+BEGIN
+select count(*) into c from d_instructor where iname=diname and itype=ditype and did=ddid;
+if c > 0 then
+dbms_output.put_line('Insructor already exist');
+else
+insert into d_instructor values(autoinstid.nextval,diname,ddid,ditype);
+dbms_output.put_line('Insructor ID IS '||autoinstid.currval);
+COMMIT;
+end if;
+END;
+/
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+call procedure
+set serveroutput on;
+begin
+insertinstructor(1,'Chen','full-time','IS');
+end;
+/
+begin
+insertinstructor(7,'James','full-time','IS');
+end;
+/
+

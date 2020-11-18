@@ -1,0 +1,69 @@
+----procedure to find the graduate courses has no scheduled----
+
+create or replace procedure f_course(s_pid in varchar)
+is
+cursor c1 is select cid,tblock_id,rid from schedule where pid=s_pid;
+f_cid varchar(100);
+f_time int;
+f_rid int;
+begin
+open c1;
+loop
+	fetch c1 into f_cid,f_time,f_rid;
+	exit when c1%notfound;
+	if f_time is null and f_rid is null then
+	dbms_output.put_line(f_cid );
+	end if;
+end loop;
+close c1;
+end;
+/
+
+
+show errors;
+
+
+---execution to find rest of course---
+
+set serveroutput on;
+
+exec f_course('ISMS');
+
+
+
+---execute to find timeblock---
+set serveroutput on;
+
+exec find_time(5,2,5);
+
+
+
+
+---execute to find room---
+set serveroutput on;
+
+exec find_room('IS 660',0,45);
+
+
+
+
+---execute to find pair---
+set serveroutput on;
+exec score(201,4001);
+exec score(202,9001);
+exec score(203,10001);
+
+
+
+
+
+---execute to assign time and room---
+set serveroutput on;
+
+exec final_schedule(4001,201,5,'IS 660');
+
+
+select * from schedule;
+
+
+

@@ -1,0 +1,205 @@
+----temporary table----
+
+drop table temp_time;
+
+create global temporary table temp_time
+(
+	s_sid int,
+	s_tblock int
+);
+	
+	
+drop table temp_room;
+
+create global temporary table temp_room
+(
+	s_tb int,
+	s_room int
+);
+
+
+
+
+----procedure to find time block----
+	
+create or replace procedure find_time(s_iid in int,n_day1 in int,n_day2 in int )
+is
+cursor c1 is select tblock_id,day from schedule where iid=s_iid;
+cursor c2 is select tblock_id,day1 from time_block where se_time>'4 p.m.'; 
+s_time int;
+d int;
+ss_time int;
+dd int;
+begin
+open c1;
+open c2;
+
+	fetch c1 into s_time,d;
+	loop
+	fetch c2 into ss_time,dd;
+	exit when c1%notfound;
+	exit when c2%notfound;
+	if s_time <> ss_time then
+		if d <> dd then
+			if dd <> n_day1 and dd <> n_day2 then
+			dbms_output.put_line('The suitable time block is ' || ss_time);
+			insert into temp_time values(s_iid,ss_time);
+			end if;
+		end if;
+	end if;
+	end loop;
+
+close c2;
+close c1;
+end;
+/
+
+
+
+
+----procedure to find room----
+create or replace procedure find_room(s_c in varchar, cr_type in int,cr_size in int)
+is
+cursor c1 is select rid,room_type,total_seats from room;
+cursor c2 is select s_tblock from temp_time;
+cursor c3 is select tblock_id,rid from schedule;
+t_block int;
+r_rid int;
+r_type int;
+r_total int;
+t_id int;
+t_rid int;
+begin
+open c1;
+open c2;
+open c3;
+loop
+	fetch c1 into r_rid,r_type,r_total;
+
+	fetch c2 into t_block;
+	fetch c3 into t_id,t_rid;
+	exit when c1%notfound;
+	exit when c2%notfound;
+	exit when c3%notfound;
+		if r_type=cr_type then 
+			if r_total>=cr_size then
+				if r_rid<>t_rid or t_block<>t_id then
+					dbms_output.put_line(r_rid ||' ' || t_block);
+					insert into temp_room values(t_block,r_rid);
+				end if;
+			end if;
+		end if;
+
+end loop;
+close c1;
+close c2;
+close c3;
+end;
+/
+
+
+
+
+show errors;
+
+
+
+
+-----procedure to find score----
+
+
+create or replace procedure score (s_rid in int, s_tbid in int)
+is
+cursor c1 is select sum(section) from schedule where tblock_id=s_tbid;
+cursor c2 is select sum(section) from schedule where rid=s_rid;
+t_sum int;
+r_sum int;
+f_score int;
+begin
+open c1;
+open c2;
+loop	
+	fetch c1 into t_sum;
+	fetch c2 into r_sum;
+	exit when c1%notfound;
+	exit when c2%notfound;
+	if c1%notfound then
+	dbms_output.put_line('The score is 0 because the time block is not assigned yet');
+	end if;
+	if c2%notfound then
+	dbms_output.put_line('The score is 0 because the room is not assigned yet');
+	end if;
+	f_score:=t_sum * r_sum;
+	dbms_output.put_line(f_score);
+
+end loop;
+close c2;
+close c1;
+end;
+/
+
+
+
+
+
+-----final procedure-----
+
+
+create or replace procedure final_schedule(s_block in int, s_r in int,i_iid in int,i_cid in varchar)
+is
+cursor c1 is select cid,pid from schedule where iid=i_iid;
+tid varchar(100);
+rid varchar(100);
+begin
+open c1;
+loop
+	fetch c1 into tid,tid;
+	exit when c1%notfound;
+	if c1%found then
+	update schedule set tblock_id=s_block,rid=s_r where iid=i_iid and cid=i_cid; 
+	end if;
+end loop;
+close c1;
+end;
+/
+
+
+show errors;
+
+
+
+---execution to find time block---
+
+set serveroutput on;
+
+exec find_time(1,2,5);
+
+
+select * from temp_time;
+
+
+
+---execution to find room---
+set serveroutput on;
+
+exec find_room('IS 650',0,45);
+
+
+
+----execution to find score----
+set serveroutput on;
+exec score(201,4001);
+exec score(202,9001);
+exec score(203,10001);
+
+
+-----find assign time block to course---
+set serveroutput on;
+
+exec final_schedule(10001,203,1,'IS 650');
+
+
+select * from schedule;
+
+
+

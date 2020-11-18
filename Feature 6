@@ -1,0 +1,239 @@
+
+
+----temporary table that store the function and procedure value----
+
+drop table temp_iid;
+create global temporary table temp_iid
+(
+inst_iid int ,
+i_weight int,
+i_load int,
+i_assigned int
+);
+
+
+
+drop table temp_min;
+create global temporary table temp_min
+(	
+	t_id int,
+	t_min int
+);
+
+
+
+------find the course's section that is not assigned----
+
+create or replace procedure find_course(c_ccid in varchar)
+is
+cursor c2 is select sum(section) from c_load where cid=c_ccid;
+cursor c1 is select section from course where cid=c_ccid; 
+c_sec int;
+cc_sec int;
+a_sec int;
+begin
+open c1;
+open c2;
+loop
+	fetch c1 into c_sec;
+	fetch c2 into cc_sec;
+	exit when c1%notfound;
+	exit when c2%notfound;
+	if c_sec >cc_sec then
+	a_sec:= c_sec-cc_sec;
+	dbms_output.put_line('For ' || c_ccid || ' ' ||a_sec || ' section needs to assign');
+	else
+	dbms_output.put_line('sections are assigned');
+	end if;
+end loop;
+close c2;
+close c1;
+end;
+/
+
+
+
+
+----the list of instructor who willing to teach the particular course----
+
+create or replace procedure find_inst(course_id in varchar)
+is
+cursor c1 is select iid, iname from c_teach where cid=course_id;
+instructor_id int;
+instructor_name varchar(100);
+begin
+open c1;
+loop
+	fetch c1 into instructor_id,instructor_name;
+	exit when c1%notfound;
+	dbms_output.put_line(instructor_id || instructor_name); 
+end loop;
+close c1;
+end;
+/
+
+
+
+
+
+
+
+
+-----find minimum of the number----
+
+create or replace procedure findmin(c_section in varchar, i_section in int)   
+is 
+course_section int;
+inst_section int;
+begin 
+	select section into course_section from course where cid=c_section;
+	select section into inst_section from c_teach where iid=i_section and cid=c_section;
+	if inst_section < course_section then
+	insert into temp_min(t_id,t_min) values (i_section,inst_section);
+	dbms_output.put_line(inst_section); 
+	else
+	insert into temp_min(t_id,t_min) values (i_section,course_section);
+    dbms_output.put_line(course_section); 
+	end if;  
+	exception
+	when no_data_found then
+	dbms_output.put_line('no data found');
+end;
+/
+
+
+
+
+
+
+---function that compute weight----
+
+create or replace function compute_weight(instructor in int)
+return int
+is
+weight int;
+z_min temp_min.t_min%type;
+cload c_load.cload_id%type;
+assigned c_load.assigned_no%type;
+load int;
+begin
+	select c_weight into weight from c_load where iid=instructor order by weight desc;
+	select cload_id, assigned_no into cload, assigned from c_load where 
+	iid=instructor;
+	select t_min into z_min from temp_min where t_id=instructor;
+	load:=cload-assigned;
+	weight:= z_min * load;
+	insert into temp_iid (inst_iid,i_weight,i_load,i_assigned) values (instructor,weight,cload,assigned);
+	return weight;	
+end;
+/
+
+
+show errors;
+
+
+
+	
+----final procedure to assign course to instructor----	
+	
+create or replace procedure assign_course(c_cid in varchar, c_cname in varchar)
+is
+i_sec int;
+ii_sec int;
+c_assign c_load%rowtype;
+begin
+	insert into c_load(iid,iname,year,semester,cid,cname,pid,section)values
+	(1,'Chen',2019,'Fall',c_cid,c_cname,'ISMS',1);
+	update c_load set assigned_no=assigned_no+1 where iid=1;
+	insert into schedule(sch_id,pid,cid,iid,year,semester,section) values ('SCH00'||sdlid.nextval,'ISMS',c_cid,1,2019,'Fall',1);
+	select section into i_sec from course where cid=c_cid and cname=c_cname;
+	select sum(section) into ii_sec from c_load where cid=c_cid and cname=c_cname;
+	if i_sec >  ii_sec then
+	dbms_output.put_line('Not enough instructor');
+	end if;
+exception 
+when no_data_found then
+dbms_output.put_line('Invalid id');
+
+end;
+/
+
+
+
+show errors;
+
+
+
+
+---execution to find any left section unassigned----
+set serveroutput on;
+
+exec find_course('IS 650');
+
+
+----execution to find instructor list---
+
+set serveroutput on;
+
+exec find_inst('IS 650');
+
+
+----execution of the minimum function----
+ 
+exec findmin('IS 650', 1);
+exec findmin('IS 650', 3);
+
+set serveroutput on;
+
+
+
+----weight function execution----
+
+declare 
+weight int;
+begin
+weight:=compute_weight(1);
+	if weight > 0 then	
+	dbms_output.put_line(weight);
+	else	
+	dbms_output.put_line('The weight is 0');	
+	end if;
+end;
+/
+
+declare 
+weight int;
+begin
+weight:=compute_weight(3);
+	if weight > 0 then	
+	dbms_output.put_line(weight);
+	else	
+	dbms_output.put_line('The weight is 0');	
+	end if;
+end;
+/
+
+
+
+
+----feature 6 sequence----
+
+drop sequence sdlid;
+create sequence sdlid start with 7 increment by 1;
+
+
+----final assigining----
+set serveroutput on;
+
+exec assign_course('IS 650','Artificial Intelligence');
+
+	
+
+select * from c_load;
+select * from schedule;
+
+
+
+
+
+

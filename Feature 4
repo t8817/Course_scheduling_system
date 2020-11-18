@@ -1,0 +1,45 @@
+CREATE OR REPLACE PROCEDURE show_course(
+	       dyear IN c_teach.year%TYPE,
+           dsem in c_teach.semester%TYPE,
+           dpid IN course.pid%TYPE)
+as
+c number(2):=0;
+rcname course.cname%TYPE;
+rcredits course.credits%TYPE;
+rgradins course.grading%TYPE;
+rschedule schedule.sch_id%TYPE;
+rsection  c_teach.section%TYPE;
+riname    c_teach.iname%TYPE;
+rrid      schedule.rid%TYPE;
+rday1     time_block.day1%TYPE; 
+rday2     time_block.day2%TYPE;
+rse_time  time_block.se_time%TYPE;
+rstatus schedule.status%TYPE;
+cursor c1 is select course.cname,course.credits,course.grading,sch_id,c_teach.section,c_teach.iname,schedule.rid,time_block.day1,time_block.day2,se_time,schedule.status from program ,course,c_teach,schedule,time_block where program.pid=course.pid and course.cid=c_teach.cid and schedule.cid=course.cid and schedule.tblock_id=time_block.tblock_id and c_teach.year=dyear and c_teach.semester=dsem and course.pid=dpid order by course.cid,course.section;
+BEGIN
+select count(*) into c from program where pid=dpid;
+if c > 0 then
+OPEN c1; 
+LOOP
+        FETCH c1 INTO rcname, rcredits,rgradins,rschedule,rsection,riname,rrid,rday1,rday2,rse_time,rstatus;
+        EXIT WHEN c1%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('coursename '||rcname||' credits '||rcredits||' grading '||rgradins||' schedule id '||rschedule||' section '||rsection||' instructor name '||riname||' classroom '||rrid||' day1 '||rday1||
+        ' day2 '||rday2||' schedule time '||rse_time||' status '||rstatus);
+end loop;
+close c1;
+else
+dbms_output.put_line('invalid program id');
+end if;
+END;
+/
+
+begin
+dbms_output.put_line('record is');
+show_course(2019,'Fall','ISMS3');
+end;
+
+begin
+--dbms_output.put_line('record is');---VALId output
+show_course(2019,'Fall','ISMS');
+end;
+/

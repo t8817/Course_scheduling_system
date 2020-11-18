@@ -1,0 +1,66 @@
+
+----feature 13---
+
+show errors;
+create or replace procedure drop_course(student_id in int,schedule_id in varchar)
+is
+rstatus int;
+cour_id varchar(100);
+wlpos int;
+wlstid int;
+wl_pos int;
+wl_count int;
+sch_size int;
+sctn_size int;
+begin
+select  distinct sch.cid,reg.r_status into cour_id, rstatus from student st,s_registration reg,schedule sch
+where st.sid=reg.sid and reg.cid=sch.cid and st.sid=student_id and sch.sch_id=schedule_id;
+if rstatus!=0 and rstatus!=1 then
+dbms_output.put_line('the student is not registered with that course');
+elsif rstatus=0 then
+select distinct position into wlpos from wait_list where sid=student_id and sch_id=schedule_id;
+delete from wait_list where sid=student_id and sch_id=schedule_id;
+dbms_output.put_line('student record is deleted from wait_list table');
+update s_registration set r_status=2 where sid=student_id and
+cid in (select cid from schedule where sch_id=schedule_id);
+dbms_output.put_line('status is updated to dropped for student');
+update wait_list set position=position-1
+where position >wlpos and sch_id=schedule_id;
+elsif rstatus=1 then
+select distinct sid into wlstid from wait_list where sch_id=schedule_id and position in
+(select min(position) from wait_list where	sch_id=schedule_id );
+update s_registration set r_status=1 where sid=wlstid and
+cid in (select cid from schedule where sch_id=schedule_id);
+dbms_output.put_line('student is enrolled');
+select distinct position into wl_pos from wait_list where sid=wlstid and sch_id=schedule_id;
+delete from wait_list where sid=wlstid and sch_id=schedule_id;
+dbms_output.put_line('student deleted from wait_list table from enrolled to course');
+update wait_list set position=position-1
+where position >wl_pos and sch_id=schedule_id;
+end if;
+select count(*) into wl_count from
+wait_list wl,schedule sch,student st
+where  wl.sch_id= sch.sch_id and wl.sid=st.sid and sch.sch_id=schedule_id;
+if wl_count=0 then
+select distinct capacity into sch_size from schedule sch, section sec
+where sch.section_id=sec.section_id and  sch_id=schedule_id;
+select distinct csize into sctn_size from schedule sch, section sec
+where sch.section_id=sec.section_id and sch_id=schedule_id;
+if sch_size>sctn_size then
+update course set status=1 where cid in (select cid from schedule where sch_id=schedule_id);
+dbms_output.put_line('course is now open');
+end if;
+end if;
+/*exception 
+when no_data_found then
+dbms_output.put_line('Data Exception error');*/
+end;
+/
+
+----execution----
+
+set serveroutput on;
+exec drop_course(1,'SCH001');
+exec drop_course(2,'SCH004');
+exec drop_course(5,'SCH002');
+exec drop_course(3,'SCH003');

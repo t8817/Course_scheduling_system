@@ -1,0 +1,51 @@
+----Feature 14----
+Create or replace procedure student_print_course_schedule(st_id in int,y in int,semester in varchar)
+Is
+cursor c1 is select c.cid,c.cname,s.section_id,sr.r_status,w.position 
+from course c,s_registration sr, wait_list w, schedule s, student st
+where c.cid=s.cid and s.sch_id=w.sch_id and c.cid=sr.cid and st.sid=w.sid and
+s.year=y and s.semester=semester and st.sid = st_id;
+
+courseid course.cid%type;
+coursename course.cname%type;
+sect_id section.section_id%type;
+status s_registration.r_status%type;
+wait_pos  wait_list.position%type;
+
+begin 
+  open c1;
+  loop
+    fetch c1 into courseid,coursename,sect_id,status,wait_pos;
+    exit when c1%notfound;
+    if wait_pos = 0 then
+    dbms_output.put_line('courseID : '||courseid||' coursename : '||coursename||' sections : '||sect_id||
+    ' status for course : '||status);
+    else
+    dbms_output.put_line('courseID : '||courseid||' coursename : '||coursename||' sections : '||sect_id||
+    ' status for course : '||status || ' waitlist position is : ' ||wait_pos || '');
+    end if;
+    end loop;
+    close c1;
+    end;
+/
+
+show errors;
+----execution---
+
+set serveroutput on;   -----give valid output----
+exec student_print_course_schedule(4,2019,'Fall');
+
+
+
+
+
+
+
+
+
+/	
+
+----execution---
+show errors;
+
+exec feature15('IS',2019);

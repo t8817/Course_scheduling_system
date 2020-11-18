@@ -1,0 +1,132 @@
+
+-----temporary table----
+
+drop table temp_course;
+
+create global temporary table temp_course
+(
+	course_id varchar(100),
+	course_name varchar(100),
+	program_pid varchar(100)
+);
+
+
+----temporary table for instructor----
+
+drop table temp_instructor;
+create global temporary table temp_instructor
+(
+instructor_id int,
+instructor_name varchar(100),
+program_pid varchar(100)
+);
+
+
+
+----procedure to find course that is not assigned----
+
+create or replace procedure find_course(program_id in varchar)
+is
+cursor c1 is
+select cid,cname from course where not exists(select null from c_load where course.cid=c_load.cid);
+ccid varchar(100);
+ccname varchar(100);
+begin
+open c1;
+loop
+	fetch c1 into ccid,ccname;
+	exit when c1%notfound;
+	if c1%found then
+	insert into temp_course(course_id,course_name,program_pid) values (ccid,ccname,program_id);
+	else
+	dbms_output.put_line('all courses are assigned');
+	end if;
+end loop;
+close c1;
+end;
+/
+
+
+
+
+
+
+-----procedure to find the instructor not exceed their course load----
+
+create or replace procedure find_instructor(i_pid in varchar)
+is
+cursor c1 is
+select iid, iname from c_load where pid=i_pid and assigned_no < cload_id;
+i_iid int;
+i_iname varchar(100);
+begin
+open c1;
+loop
+	fetch c1 into i_iid,i_iname;
+	exit when c1%notfound;
+	if c1%found then
+	insert into temp_instructor(instructor_id,instructor_name,program_pid) values (i_iid,i_iname,i_pid);
+	else
+	dbms_output.put_line('no more instructor');
+	end if;
+end loop;
+close c1;
+end;
+/
+
+
+
+----assign elective to instructor----
+
+create or replace procedure assign_elective(p_iid in int,p_iname in varchar,course_d in varchar,p_pid in varchar,p_sec in int)
+is
+course_n varchar(100);
+cd_id c_load.cload_id%type;
+ass c_load.assigned_no%type;
+begin
+	select course_name into course_n from temp_course where course_id=course_d; 
+	insert into c_load (iid,iname,year,semester,cid,cname,pid) values
+	(p_iid, p_iname,2019,'Fall', course_d,course_n,p_pid);
+	update c_load set assigned_no=assigned_no+1 where iid=p_iid;
+	insert into schedule(sch_id,pid,cid,iid,year,semester,section) values ('SCH00'||sdlid.nextval,p_pid,course_d,p_iid,2019,'Fall',p_sec);
+	if cd_id > ass then
+	dbms_output.put_line(p_iid || p_iname);
+	end if;
+	exception 
+	when no_data_found then
+	dbms_output.put_line('invalid data');
+end;
+/
+
+
+
+
+
+
+----course procedure execution----
+set serveroutput on;
+
+exec find_course('ISMS');
+
+
+
+----instructor procedure execution----
+
+set serveroutput on;
+
+exec find_instructor('ISMS');
+
+
+select * from temp_instructor;
+
+ 
+select * from temp_course;
+
+----assign course procedure execution----
+
+set serveroutput on;
+exec assign_elective(5,'John Hebler','IS 660','ISMS',2);
+exec assign_elective(2,'Vandana Janeja','IS 765','ISMS',2);
+
+select * from c_load;
+select * from schedule;
